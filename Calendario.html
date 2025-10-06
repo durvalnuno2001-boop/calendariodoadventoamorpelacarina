@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>As Quadras que não te esqueceram</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background: #800000; /* Fundo Bordô */
+      color: #c0c0c0; /* Letras prateadas */
+      text-align: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 5px #400000;
+    }
+
+    #resumo {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      color: #dcdcdc;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .day {
+      background: #a52a2a; /* dia bordô mais claro */
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2em;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      color: #c0c0c0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .day.locked {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .day:hover:not(.locked) {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+    }
+
+    /* Pop-up */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s;
+    }
+
+  .popup-content {
+  background: #a52a2a;
+  padding: 20px;
+  border-radius: 15px;
+  max-width: 600px;
+  display: flex; /* flex para colocar lado a lado */
+  align-items: center;
+  gap: 20px; /* espaço entre quadra e imagem */
+  position: relative;
+  animation: popUp 0.3s;
+  color: #c0c0c0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  text-align: left;
+}
+
+.popup-content img {
+  max-width: 250px; /* ajusta tamanho da imagem */
+  max-height: 250px;
+  border-radius: 10px;
+}
+
+
+    .close-btn {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #c0c0c0;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    @keyframes popUp {
+      from {transform: scale(0.7);}
+      to {transform: scale(1);}
+    }
+
+    /* Corações flutuantes */
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff69b4;
+      clip-path: polygon(
+        50% 0%, 61% 12%, 75% 12%, 87% 25%, 87% 37%,
+        75% 50%, 50% 75%, 25% 50%, 13% 37%, 13% 25%,
+        25% 12%, 39% 12%
+      );
+      animation: floatUp 5s linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.7); opacity:0.7;}
+      50% { opacity:1; }
+      100% { transform: translateY(-800px) scale(1); opacity:0;}
+    }
+  </style>
+</head>
+<body>
+  <h1>As Quadras que não te esqueceram</h1>
+  <div id="resumo">Podes não responder mas espero que leias. O meu dom para poeta ou informático não é o melhor mas foi com coração. Espero que te divirtas, relembres e rias com as quadras que escrevi. Pode ser parolo masss é sincero tal como o meu Amor por ti! Se não é piroso não é amor sempre me disseram. Espero que gostes Babygirl! Amo te!</div>
+
+  <div class="calendar" id="calendar"></div>
+
+  <!-- Pop-up -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <span class="close-btn" id="closeBtn">&times;</span>
+      <div id="popupText"></div>
+      <img id="popupImage" src="" alt="">
+    </div>
+  </div>
+
+  <script>
+    const calendar = document.getElementById('calendar');
+    const popup = document.getElementById('popup');
+    const popupText = document.getElementById('popupText');
+    const popupImage = document.getElementById('popupImage');
+    const closeBtn = document.getElementById('closeBtn');
+
+    const startDay = 8;
+    const endDay = 24;
+    const month = 10;
+
+    const quadras = {
+      "8": {text: "O principio foi assim \nNa receção sem saber,\n Foi dado o beijo \n Que para sempre iria prevalecer", img: "https://i.imgur.com/twgp4Cv.jpeg"}, 
+      "9": {text: "Na Vila mais antiga \nUm casal passeia abraçado\n Começa a sua cantiga \n Para sempre apaixonado", img: "https://i.imgur.com/xhl4wEe.jpeg"},
+      "10": {text: "Boa como nunca vi \nNo provador não consegui resistir\n Roubei-lhe uma mordida \n Sem sequer pedir", img: "https://i.imgur.com/9k0e4Eg.jpeg"},
+      "11": {text: "Um bebedo sem igual \nUma menina de chupa chupa encontou\n Nem houve bebida que distraísse \n O bebedo por ali ficou", img: "https://i.imgur.com/5uCs6gQ.jpeg"},
+      "12": {text: "Pelos Jardins do seu Palácio \nA princesa caminha\n Roubei lhe uma foto \n E tornei-a Minha Rainha", img: "https://i.imgur.com/ngeaUml.jpeg"},
+      "13": {text: "A Madrid me levaste \nMesmo eu tendo medo do ar\n Com a mão vermelha ficaste \n Porque és o meu lar", img: "https://i.imgur.com/zGrVLEM.jpeg"},
+      "14": {text: "Os dois à beira mar \nCom o horizonte ao fundo\nSentimos um amor profundo \nQue nunca irá acabar", img: "https://i.imgur.com/EByMaM1.jpeg"},
+      "15": {text: "Foto da minha serie tentada \nHorrorosa a tentativa de Marshal\nIgual só o amor \nPela minh Lilly até o final", img: "https://i.imgur.com/gLccLwB.jpeg"},
+      "16": {text: "Nesto colo fico deitado \nMelhor nem tem em Lamas\nE isto tem de ser falado \nMAS QUE MAMAS", img: "https://i.imgur.com/lH1BG2P.jpeg"},
+      "17": {text: "Queimadinhos no verão \nPara a marquinha poder ver\nPodes até chamar me de cão \nMas todo esse corpor quero comer", img: "https://i.imgur.com/q4YNzpC.jpeg"},
+      "18": {text: "De Pinheiro em Pinheiro \nA passear pelo mercado\nO Natal contigo tem outro cheiro \nO da melhor prenda que Deus me podia ter dado", img: "https://i.imgur.com/X1WxEhG.jpeg"},
+      "19": {text: "Dizem que estatística aplicada não dá para nada e que vou acabar no desemprego,\nmas pelo menos deu para conhecer a miúda da minha vida", img: "https://i.imgur.com/eRiZmFd.jpeg"},
+      "20": {text: "Um orgulho enorme senti \nQuando terminou aquele semestre\nNunca tive a menor dúvida de ti \nPara sempre a Minha Mestre", img: "https://i.imgur.com/jH34AGu.jpeg"},
+      "21": {text: "Até nos cops estamos juntos \nBebes comigo como nunca vi\nQueres mais um shot? \nBAH OUIIIIII", img: "https://i.imgur.com/gL5kzpl.jpeg"},
+      "22": {text: "Uma foto tua preferida \nE que eu aprendi a gostar\nAté no espelho se nota que é sentida \nE que sempre te vou Amar", img: "https://i.imgur.com/odiZKV1.jpeg"},
+      "23": {text: "O Aniversário da tua menina \nÉ como tu lindinha\nMelhor exemplo não podia ter \nParabéns Princesinha!", img: "https://i.imgur.com/05RxHXW.jpeg"},
+      "24": {text: "Ultima Quadra neste dia \n5 anos e 9 meses fariamos já viste?\nEstar contigo hoje preferia \nContamos mais meses juntos ou vais me deixar triste?", img: "https://i.imgur.com/ZXWH52R.jpeg"} 
+    };
+
+    function createCalendar() {
+      const today = new Date();
+      const currentDay = today.getDate();
+      const currentMonth = today.getMonth() + 1;
+
+      for(let day = startDay; day <= endDay; day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.classList.add('day');
+
+        // Bloqueio acumulativo: desbloqueia todos os dias anteriores ao dia atual
+        if(currentMonth === month && day > currentDay) {
+          dayDiv.classList.add('locked');
+        }
+
+        dayDiv.textContent = day + '/' + month;
+        dayDiv.dataset.day = day;
+        calendar.appendChild(dayDiv);
+      }
+    }
+
+    // Abrir pop-up e atualizar desbloqueio acumulativo
+    calendar.addEventListener('click', (e) => {
+      const dayDiv = e.target.closest('.day');
+      if(!dayDiv || dayDiv.classList.contains('locked')) return;
+
+      const day = parseInt(dayDiv.dataset.day);
+
+      // Atualiza pop-up
+      popupText.innerHTML = quadras[day].text.replace(/\n/g, "<br>");
+      popupImage.src = quadras[day].img;
+      popup.style.display = 'flex';
+
+      // Desbloqueio acumulativo: todos os dias até o dia clicado
+      const dayDivs = document.querySelectorAll('.day');
+      dayDivs.forEach(d => {
+        if(parseInt(d.dataset.day) <= day) {
+          d.classList.remove('locked');
+        }
+      });
+    });
+
+    closeBtn.addEventListener('click', () => {
+      popup.style.display = 'none';
+    });
+
+    popup.addEventListener('click', (e) => {
+      if(e.target === popup) popup.style.display = 'none';
+    });
+
+    createCalendar();
+
+    // Corações flutuantes
+    function createHearts() {
+      for(let i=0; i<15; i++){
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.style.left = Math.random() * window.innerWidth + 'px';
+        heart.style.animationDuration = 4 + Math.random()*4 + 's';
+        heart.style.width = 10 + Math.random()*20 + 'px';
+        heart.style.height = heart.style.width;
+        document.body.appendChild(heart);
+      }
+    }
+    createHearts();
+  </script>
+</body>
+</html>
+
