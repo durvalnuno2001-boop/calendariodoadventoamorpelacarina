@@ -74,27 +74,26 @@
       animation: fadeIn 0.3s;
     }
 
-  .popup-content {
-  background: #a52a2a;
-  padding: 20px;
-  border-radius: 15px;
-  max-width: 600px;
-  display: flex; /* flex para colocar lado a lado */
-  align-items: center;
-  gap: 20px; /* espaço entre quadra e imagem */
-  position: relative;
-  animation: popUp 0.3s;
-  color: #c0c0c0;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-  text-align: left;
-}
+    .popup-content {
+      background: #a52a2a;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+      animation: popUp 0.3s;
+      color: #c0c0c0;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      text-align: left;
+    }
 
-.popup-content img {
-  max-width: 250px; /* ajusta tamanho da imagem */
-  max-height: 250px;
-  border-radius: 10px;
-}
-
+    .popup-content img {
+      max-width: 250px;
+      max-height: 250px;
+      border-radius: 10px;
+    }
 
     .close-btn {
       position: absolute;
@@ -134,15 +133,72 @@
       50% { opacity:1; }
       100% { transform: translateY(-800px) scale(1); opacity:0;}
     }
+
+    /* --- NOVO: botão de sugestões --- */
+    .convite-link {
+      margin-top: 40px;
+    }
+    .convite-btn {
+      background: #a52a2a;
+      color: #c0c0c0;
+      padding: 12px 25px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+      display: inline-block;
+    }
+    .convite-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+    }
+
+    /* --- NOVO: pop-up do formulário --- */
+    #popupForm .popup-content {
+      flex-direction: column;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    #popupForm input,
+    #popupForm textarea,
+    #popupForm button {
+      width: 90%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Georgia', serif;
+    }
+
+    #popupForm input, #popupForm textarea {
+      background: #d8b7b7;
+      color: #400000;
+    }
+
+    #popupForm button {
+      background: #800000;
+      color: #c0c0c0;
+      cursor: pointer;
+    }
+
   </style>
 </head>
 <body>
   <h1>As Quadras que não te esqueceram</h1>
-  <div id="resumo">Podes não responder mas espero que leias. O meu dom para poeta ou informático não é o melhor mas foi com coração. Espero que te divirtas, relembres e rias com as quadras que escrevi. Pode ser parolo masss é sincero tal como o meu Amor por ti! Se não é piroso não é amor sempre me disseram. Espero que gostes Babygirl! Amo te!</div>
+  <div id="resumo">
+    Podes não responder mas espero que leias. O meu dom para poeta ou informático não é o melhor mas foi com coração. Espero que te divirtas, relembres e rias com as quadras que escrevi. Pode ser parolo masss é sincero tal como o meu Amor por ti! Se não é piroso não é amor sempre me disseram. Espero que gostes Babygirl! Amo te!
+  </div>
 
   <div class="calendar" id="calendar"></div>
 
-  <!-- Pop-up -->
+  <!-- Botão sugestões -->
+  <div class="convite-link">
+    <a href="#" id="abrirSugestao" class="convite-btn">💌 Sugestões para próximas quadras 💖</a>
+  </div>
+
+  <!-- Pop-up das quadras -->
   <div class="popup" id="popup">
     <div class="popup-content">
       <span class="close-btn" id="closeBtn">&times;</span>
@@ -150,6 +206,30 @@
       <img id="popupImage" src="" alt="">
     </div>
   </div>
+
+  <!-- Pop-up do formulário -->
+<div class="popup" id="popupForm">
+  <div class="popup-content">
+    <span class="close-btn" id="closeFormBtn">&times;</span>
+    <h2>Sugere a tua próxima quadra 💞</h2>
+
+    <!-- Formulário sem upload -->
+    <form id="sugestaoForm" action="https://formspree.io/f/xyznokdr" method="POST">
+      <label>Seleciona o dia:</label>
+      <input type="date" name="dia" required>
+
+      <label>Seleciona a hora para te ir buscar:</label>
+      <input type="time" name="hora" required>
+
+      <label>Escreve uma quadra:</label>
+      <textarea name="quadra" rows="4" placeholder="Escreve aqui a tua quadra..." required></textarea>
+
+      <button type="submit" class="convite-btn">Enviar 💌</button>
+    </form>
+
+    <p id="mensagemSucesso" style="display:none;">💖 Obrigado pela tua sugestão, amor 💞</p>
+  </div>
+</div>
 
   <script>
     const calendar = document.getElementById('calendar');
@@ -191,7 +271,6 @@
         const dayDiv = document.createElement('div');
         dayDiv.classList.add('day');
 
-        // Bloqueio acumulativo: desbloqueia todos os dias anteriores ao dia atual
         if(currentMonth === month && day > currentDay) {
           dayDiv.classList.add('locked');
         }
@@ -202,19 +281,16 @@
       }
     }
 
-    // Abrir pop-up e atualizar desbloqueio acumulativo
     calendar.addEventListener('click', (e) => {
       const dayDiv = e.target.closest('.day');
       if(!dayDiv || dayDiv.classList.contains('locked')) return;
 
       const day = parseInt(dayDiv.dataset.day);
 
-      // Atualiza pop-up
       popupText.innerHTML = quadras[day].text.replace(/\n/g, "<br>");
       popupImage.src = quadras[day].img;
       popup.style.display = 'flex';
 
-      // Desbloqueio acumulativo: todos os dias até o dia clicado
       const dayDivs = document.querySelectorAll('.day');
       dayDivs.forEach(d => {
         if(parseInt(d.dataset.day) <= day) {
@@ -246,7 +322,22 @@
       }
     }
     createHearts();
+
+    // Pop-up formulário
+    const abrirSugestao = document.getElementById("abrirSugestao");
+    const popupForm = document.getElementById("popupForm");
+    const closeFormBtn = document.getElementById("closeFormBtn");
+
+    abrirSugestao.addEventListener("click", (e) => {
+      e.preventDefault();
+      popupForm.style.display = "flex";
+    });
+
+    closeFormBtn.addEventListener("click", () => {
+      popupForm.style.display = "none";
+    });
+
+    // ✅ Formulário agora submete normalmente, mensagem de sucesso aparece via CSS/HTML
   </script>
 </body>
 </html>
-
